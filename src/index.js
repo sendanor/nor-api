@@ -58,9 +58,12 @@ function do_create_req(config, opts) {
 			if(key.length === 0) { return; }
 
 			// Handle functions
-
+			if(item && (typeof item === 'object') && (item instanceof Function)) {
+				console.log(__filename + ': DEBUG: item is an function');
+				
 			// Handle arrays
-			if(item && (typeof item === 'object') && (item instanceof Array)) {
+			} else if(item && (typeof item === 'object') && (item instanceof Array)) {
+				console.log(__filename + ': DEBUG: item is an Array');
 				var orig_key = key;
 				key = parseInt(key, 10);
 				if(''+key !== orig_key) {
@@ -77,7 +80,8 @@ function do_create_req(config, opts) {
 				item = parent[key];
 
 			// Handle generic objects
-			} if(item && (typeof item === 'object')) {
+			} else if(item && (typeof item === 'object')) {
+				console.log(__filename + ': DEBUG: item is an object');
 				if(item[key] === undefined) {
 					do_failure(req, res, {'verb': 'notfound', 'msg':'Resource not found.'}, 404);
 					replied = true;
@@ -89,6 +93,7 @@ function do_create_req(config, opts) {
 
 			// Handle anything else
 			} else {
+				console.log(__filename + ': DEBUG: item is other');
 				parent = item;
 				item = undefined;
 			}
@@ -96,6 +101,7 @@ function do_create_req(config, opts) {
 		});
 
 		if(!replied) {
+			console.log(__filename + ': DEBUG: in the end item was', item);
 			if(item === undefined) {
 				do_failure(req, res, {'verb': 'notfound', 'msg':'Resource not found.'}, 404);
 			} else {
