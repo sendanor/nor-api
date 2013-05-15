@@ -41,13 +41,25 @@ function do_create_req(config, opts) {
 	
 	/* Inner Request handler */
 	function do_req(req, res) {
+		console.log(__filename + ': DEBUG: req.url = '+"'" + req.url + "'"); 
 		var url = require('url').parse(req.url);
 		var replied = false;
 		var parent;
 		var item = routes;
-		url.path.split('/').forEach(function(key) {
+		console.log(__filename + ': DEBUG: url.pathname = '+"'" + url.pathname + "'"); 
+		url.pathname.split('/').forEach(function(key) {
+
+			if(replied) console.log(__filename + ': DEBUG: replied =', replied); 
+			console.log(__filename + ': DEBUG: key = '+"'" + key + "'"); 
+			console.log(__filename + ': DEBUG: parent =', parent); 
+			console.log(__filename + ': DEBUG: item =', item); 
+
+			// Handle empty keys -- like the first and other "//"s -- by ignoring them
 			if(key.length === 0) { return; }
 
+			// Handle functions
+
+			// Handle arrays
 			if(item && (typeof item === 'object') && (item instanceof Array)) {
 				var orig_key = key;
 				key = parseInt(key, 10);
@@ -63,6 +75,8 @@ function do_create_req(config, opts) {
 				}
 				parent = item;
 				item = parent[key];
+
+			// Handle generic objects
 			} if(item && (typeof item === 'object')) {
 				if(item[key] === undefined) {
 					do_failure(req, res, {'verb': 'notfound', 'msg':'Resource not found.'}, 404);
@@ -72,6 +86,8 @@ function do_create_req(config, opts) {
 				parent = item;
 				item = parent[key];
 				return;
+
+			// Handle anything else
 			} else {
 				parent = item;
 				item = undefined;
