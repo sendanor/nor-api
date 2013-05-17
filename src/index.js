@@ -2,6 +2,8 @@
 
 var api_config = require('nor-config').from(__dirname);
 
+var RequestRouter = require('./Router.js');
+
 var mod = module.exports = {};
 
 /** Sends successful HTTP reply */
@@ -39,31 +41,48 @@ function do_create_req(config, opts) {
 		};
 	}
 	
+	var router = new RequestRouter(routes);
+	
+	var req_counter = 0;
+
 	/* Inner Request handler */
 	function do_req(req, res) {
-		console.log(__filename + ': DEBUG: req.url = '+"'" + req.url + "'"); 
-		var url = require('url').parse(req.url);
+		req_counter += 1;
+		console.log(__filename + ': DEBUG: '+req_counter+': req.url = '+"'" + req.url + "'"); 
+		var obj = router.resolve( req, res );
+		if(obj === undefined) {
+			do_failure(req, res, {'verb': 'notfound', 'msg':'The requested resource could not be found.'}, 404);
+		} else {
+			do_success(req, res, obj);
+		}
+
+		/*
+
 		var replied = false;
 		var parent;
 		var item = routes;
-		console.log(__filename + ': DEBUG: url.pathname = '+"'" + url.pathname + "'"); 
+		console.log(__filename + ': DEBUG: '+req_counter+': url.pathname = '+"'" + url.pathname + "'"); 
 		url.pathname.split('/').forEach(function(key) {
 
-			if(replied) console.log(__filename + ': DEBUG: replied =', replied); 
-			console.log(__filename + ': DEBUG: key = '+"'" + key + "'"); 
-			console.log(__filename + ': DEBUG: parent =', parent); 
-			console.log(__filename + ': DEBUG: item =', item); 
+			if(replied) console.log(__filename + ': DEBUG: '+req_counter+': replied =', replied); 
+			console.log(__filename + ': DEBUG: '+req_counter+': key = '+"'" + key + "'"); 
+			console.log(__filename + ': DEBUG: '+req_counter+': parent =', parent); 
+			console.log(__filename + ': DEBUG: '+req_counter+': item =', item); 
 
 			// Handle empty keys -- like the first and other "//"s -- by ignoring them
 			if(key.length === 0) { return; }
 
 			// Handle functions
 			if(item && (typeof item === 'object') && (item instanceof Function)) {
-				console.log(__filename + ': DEBUG: item is an function');
+				console.log(__filename + ': DEBUG: '+req_counter+': item is an function');
 				
+				parent = item(req, res);
+				item = parent[key];
+				return;
+
 			// Handle arrays
 			} else if(item && (typeof item === 'object') && (item instanceof Array)) {
-				console.log(__filename + ': DEBUG: item is an Array');
+				console.log(__filename + ': DEBUG: '+req_counter+': item is an Array');
 				var orig_key = key;
 				key = parseInt(key, 10);
 				if(''+key !== orig_key) {
@@ -81,7 +100,7 @@ function do_create_req(config, opts) {
 
 			// Handle generic objects
 			} else if(item && (typeof item === 'object')) {
-				console.log(__filename + ': DEBUG: item is an object');
+				console.log(__filename + ': DEBUG: '+req_counter+': item is an object');
 				if(item[key] === undefined) {
 					do_failure(req, res, {'verb': 'notfound', 'msg':'Resource not found.'}, 404);
 					replied = true;
@@ -93,7 +112,7 @@ function do_create_req(config, opts) {
 
 			// Handle anything else
 			} else {
-				console.log(__filename + ': DEBUG: item is other');
+				console.log(__filename + ': DEBUG: '+req_counter+': item is other type, requesting key ' + "'" + key + "'");
 				parent = item;
 				item = undefined;
 			}
@@ -101,16 +120,24 @@ function do_create_req(config, opts) {
 		});
 
 		if(!replied) {
-			console.log(__filename + ': DEBUG: in the end item was', item);
 			if(item === undefined) {
 				do_failure(req, res, {'verb': 'notfound', 'msg':'Resource not found.'}, 404);
+			} else if(item && (item instanceof Function)) {
+				item = item(req, res);
+				console.log(__filename + ': DEBUG: '+req_counter+': in the end item was', item);
+				do_success(req, res, item);
 			} else {
+				console.log(__filename + ': DEBUG: '+req_counter+': in the end item was', item);
 				do_success(req, res, item);
 			}
 		}
-	}
+
+		*/
+
+	} // do_req
 
 	return do_req;
+
 }
 
 /** HTTP Server Creation */
