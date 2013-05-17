@@ -15,9 +15,10 @@ function stringify_resource(obj) {
 	Object.keys(obj).forEach(function(k) {
 		var v = obj[k];
 		if(IS.fun(v)) {
-			res[k] = {'type':'function'};
+			res[k] = {};
+		} else {
+			res[k] = v;
 		}
-		res[k] = v;
 	});
 	return JSON.stringify(res);
 }
