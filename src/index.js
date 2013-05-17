@@ -19,7 +19,7 @@ function stringify_resource(obj) {
 		}
 		res[k] = v;
 	});
-	return res;
+	return JSON.stringify(res);
 }
 
 /** Sends successful HTTP reply */
