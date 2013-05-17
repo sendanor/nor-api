@@ -1,7 +1,7 @@
 /* Index */
 
 var api_config = require('nor-config').from(__dirname);
-var is = require('./is.js');
+var IS = require('./is.js');
 var RequestRouter = require('./Router.js');
 
 var mod = module.exports = {};
