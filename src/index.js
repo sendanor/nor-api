@@ -11,12 +11,15 @@ function stringify_resource(obj) {
 	if(! IS.obj(obj) ) {
 		return JSON.stringify(obj);
 	}
-	return JSON.stringify(obj.map(function(v) {
+	var res = {};
+	Object.keys(obj).forEach(function(k) {
+		var v = obj[k];
 		if(IS.fun(v)) {
-			return {'type':'function'};
+			res[k] = {'type':'function'};
 		}
-		return v;
+		res[k] = v;
 	}));
+	return res;
 }
 
 /** Sends successful HTTP reply */
