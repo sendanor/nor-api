@@ -22,7 +22,7 @@ function stringify_resource(obj) {
 /** Sends successful HTTP reply */
 function do_success(req, res, msg) {
 	res.writeHead(200, {'Content-Type': 'application/json'});
-	msg = (typeof msg === 'string') ? msg : JSON.stringify(msg);
+	msg = (typeof msg === 'string') ? msg : stringify_resource(msg);
 	res.end(msg + '\n');
 }
 
@@ -30,7 +30,7 @@ function do_success(req, res, msg) {
 function do_failure(req, res, msg, code) {
 	code = code || 501;
 	res.writeHead(code, {'Content-Type': 'application/json'});
-	msg = (typeof msg === 'string') ? msg : JSON.stringify(msg);
+	msg = (typeof msg === 'string') ? msg : stringify_resource(msg);
 	res.end(msg + '\n');
 }
 
