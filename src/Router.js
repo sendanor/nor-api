@@ -1,22 +1,7 @@
 
 /* Router for requests */
 
-/** Returns true if object is an object */
-function is_obj(o) {
-	return (o && (typeof o === 'object')) ? true : false;
-}
-
-/** Returns true if object is an array */
-function is_array(o) {
-	return (is_obj(o) && (o instanceof Array)) ? true : false;
-}
-
-/** Returns true if object is a function */
-function is_fun(o) {
-	if(is_obj(o) && (o instanceof Function) ) return true;
-	return (o && (typeof o === 'function')) ? true : false;
-}
-
+var IS = require('./is.js');
 
 /** Internal target resolver
  * @param routes Object prepresenting routes to resources.
@@ -29,7 +14,7 @@ function _resolve(routes, path, req, res) {
 	var obj = routes;
 	
 	// Resolve functions first
-	while(is_fun(obj)) {
+	while(IS.fun(obj)) {
 		obj = obj(req, res);
 	}
 
@@ -41,7 +26,7 @@ function _resolve(routes, path, req, res) {
 	// If path is at the end, then return the current resource.
 	if(path.length === 0) {
 		/*
-		if(is_obj(obj) && obj.hasOwnProperty('index')) {
+		if(IS.obj(obj) && obj.hasOwnProperty('index')) {
 			res.writeHead(303, {
 				'Content-Type': 'application/json',
 				'Location':''
@@ -54,12 +39,12 @@ function _resolve(routes, path, req, res) {
 	}
 
 	// Handle arrays
-	if(is_array(obj)) {
+	if(IS.array(obj)) {
 		return _resolve(obj[parseInt(path.shift(), 10)], path, req, res);
 	}
 
 	// Handle objects
-	if(is_obj(obj)) {
+	if(IS.obj(obj)) {
 		return _resolve(obj[path.shift()], path, req, res);
 	}
 

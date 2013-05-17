@@ -8,11 +8,11 @@ var mod = module.exports = {};
 
 /** */
 function stringify_resource(obj) {
-	if(! (obj && (typeof obj === "object")) ) {
+	if(! IS.obj(obj) ) ) {
 		return JSON.stringify(obj);
 	}
 	return JSON.stringify(obj.map(function(v) {
-		if(v && (typeof v === 'function')) {
+		if(IS.fun(v)) {
 			return {'type':'function'};
 		}
 		return v;
