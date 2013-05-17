@@ -16,7 +16,7 @@ function stringify_resource(obj) {
 			return {'type':'function'};
 		}
 		return v;
-	});
+	}));
 }
 
 /** Sends successful HTTP reply */
