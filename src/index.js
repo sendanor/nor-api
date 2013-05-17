@@ -18,7 +18,7 @@ function stringify_resource(obj) {
 			res[k] = {'type':'function'};
 		}
 		res[k] = v;
-	}));
+	});
 	return res;
 }
 
