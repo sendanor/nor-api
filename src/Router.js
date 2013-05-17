@@ -76,7 +76,7 @@ function Router (routes) {
 function do_parse_url(url) {
 	var s = require('url').parse(url).pathname.replace(/[^a-zA-Z0-9_\-\+\.]+/g, "/").replace(/^\/+/, "");
 	if(s.length === 0) { return []; }
-	return s.split(".");
+	return s.split("/");
 }
 
 /** Resolve target URL to an object using routes */
