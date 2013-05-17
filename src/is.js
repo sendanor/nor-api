@@ -10,12 +10,12 @@ is.obj = function is_obj(o) {
 
 /** Returns true if object is an array */
 is.array = function is_array(o) {
-	return (is_obj(o) && (o instanceof Array)) ? true : false;
+	return (is.obj(o) && (o instanceof Array)) ? true : false;
 };
 
 /** Returns true if object is a function */
 is.fun = function is_fun(o) {
-	if(is_obj(o) && (o instanceof Function) ) return true;
+	if(is.obj(o) && (o instanceof Function) ) return true;
 	return (o && (typeof o === 'function')) ? true : false;
 };
 
