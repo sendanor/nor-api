@@ -40,9 +40,16 @@ function _resolve(routes, path, req, res) {
 
 	// If path is at the end, then return the current resource.
 	if(path.length === 0) {
-		if(is_array(obj) && obj.hasOwnProperty('index')) {
-			return _resolve(obj.index, [], req, res);
+		/*
+		if(is_obj(obj) && obj.hasOwnProperty('index')) {
+			res.writeHead(303, {
+				'Content-Type': 'application/json',
+				'Location':''
+			});
+			res.end(JSON.stringify() + '\n');
+			return;
 		}
+		*/
 		return obj;
 	}
 
