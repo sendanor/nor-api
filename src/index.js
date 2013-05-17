@@ -8,7 +8,7 @@ var mod = module.exports = {};
 
 /** */
 function stringify_resource(obj) {
-	if(! IS.obj(obj) ) ) {
+	if(! IS.obj(obj) ) {
 		return JSON.stringify(obj);
 	}
 	return JSON.stringify(obj.map(function(v) {
