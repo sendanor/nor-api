@@ -115,23 +115,27 @@ function setup_server(config, opts) {
 
 /** Handle the request with a first matching request handler from the list */
 api.first = function(list) {
-	var i = 0;
-	function handler(req, res) {
-		return Q.fcall(function() {
-			if(i >= list.length) { return api.notFound; }
-			var h = list[i];
-			if(!IS.fun(h)) { throw new TypeError("Handler #"+i+" in api.first() was not a function!"); }
-			return h(req, res).then(function(obj) {
-				if(obj === api.notFound) {
-					i += 1;
-					return handler(req, res);
-				} else {
-					return obj;
-				}
-			}); // return h(req, res)
-		}); // Q.fcall
-	} // handler
-	return handler;
+	function iterate_list(req, res) {
+		var i = 0;
+		function handler() {
+			return Q.fcall(function() {
+				if(i >= list.length) { return api.notFound; }
+				var h = list[i];
+				if(!IS.fun(h)) { throw new TypeError("Handler #"+i+" in api.first() was not a function!"); }
+				return h(req, res).then(function(obj) {
+					console.log('DEBUG: ', obj);
+					if(obj === api.notFound) {
+						i += 1;
+						return handler();
+					} else {
+						return obj;
+					}
+				}); // return h(req, res)
+			}); // Q.fcall
+		} // handler
+		return handler();
+	} // iterate_list
+	return iterate_list;
 }; // api.first
 
 // Exports
