@@ -52,7 +52,7 @@ function _resolve(routes, path, req, res) {
 		if(IS.obj(obj)) {
 			var k = path[0];
 			if(obj[k] === undefined) {
-				return undefined;
+				return flags.notFound;
 			}
 			if(!obj.hasOwnProperty(k)) {
 				return Q.reject({'code':403, 'desc':'Forbidden'});
