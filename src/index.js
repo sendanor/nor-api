@@ -101,15 +101,17 @@ function do_create_server(config, do_req) {
 		http.createServer(do_req).listen(config.port);
 		console.log("Server running at http://0.0.0.0:"+config.port);
 	}
+	return http;
 }
 
 /** API builder */
-function setup_api(config, opts) {
+function setup_server(config, opts) {
 	config._def('port', 3000);
 	do_create_server(config, do_create_req(config, opts));
 }
 
 // Exports
-mod.setup = setup_api;
+mod.createHandler = do_create_req;
+mod.createServer = setup_server;
 
 /* EOF */
