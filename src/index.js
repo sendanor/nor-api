@@ -3,8 +3,10 @@
 var api_config = require('nor-config').from(__dirname);
 var IS = require('./is.js');
 var RequestRouter = require('./Router.js');
+var api = module.exports = {};
 
-var mod = module.exports = {};
+api.replySent = {};
+api.replySent.toString = function() { return 'replySent'; };
 
 /** */
 function stringify_resource(obj) {
@@ -48,7 +50,6 @@ function do_failure(req, res, opts) {
 
 /** Builder for generic HTTP Request Handler */
 function do_create_req(config, opts) {
-	
 	var routes = opts.routes || {};
 	var version = opts.version || {};
 	
@@ -57,8 +58,7 @@ function do_create_req(config, opts) {
 		version = {'self':version};
 	}
 	
-	// FIXME: If routes.version is missing, read it from the package.json of the target application.
-
+	// If routes.version is missing, read it from the package.json of the target application.
 	if(!routes.version) {
 		routes.version = {
 			'self': version.self || config.pkg.version,
@@ -67,28 +67,16 @@ function do_create_req(config, opts) {
 	}
 	
 	var router = new RequestRouter(routes);
-	
 	var req_counter = 0;
 
 	/* Inner Request handler */
 	function do_req(req, res) {
 		req_counter += 1;
 		console.log(__filename + ': DEBUG: '+req_counter+': req.url = '+"'" + req.url + "'"); 
-
-		router.resolve( req, res ).then(function(obj) {
-			if(obj === undefined) {
-				do_failure(req, res, {'verb': 'notfound', 'desc':'The requested resource could not be found.', 'code':404});
-			} else {
-				do_success(req, res, obj);
-			}
-		}).fail(function(err) {
-			do_failure(req, res, err);
-		}).done();
-
+		return router.resolve( req, res );
 	} // do_req
 
 	return do_req;
-
 }
 
 /** HTTP Server Creation */
@@ -104,14 +92,27 @@ function do_create_server(config, do_req) {
 	return http;
 }
 
-/** API builder */
+/** API server builder */
 function setup_server(config, opts) {
 	config._def('port', 3000);
-	do_create_server(config, do_create_req(config, opts));
+	var req_handler = do_create_req(config, opts);
+	return do_create_server(config, function(req, res) {
+		req_handler(req, res).then(function(obj) {
+			if(obj === api.replySent) {
+				return;
+			} else if(obj === undefined) {
+				do_failure(req, res, {'verb': 'notfound', 'desc':'The requested resource could not be found.', 'code':404});
+			} else {
+				do_success(req, res, obj);
+			}
+		}).fail(function(err) {
+			do_failure(req, res, err);
+		}).done();
+	});
 }
 
 // Exports
-mod.createHandler = do_create_req;
-mod.createServer = setup_server;
+api.createHandler = do_create_req;
+api.createServer = setup_server;
 
 /* EOF */
