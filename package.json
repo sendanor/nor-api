@@ -1,6 +1,6 @@
 {
   "name": "nor-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Generic module for building Sendanor's APIs.",
   "main": "src/index.js",
   "scripts": {
