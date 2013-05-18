@@ -12,7 +12,7 @@ var flags = require('./flags.js');
 function _resolve(routes, path, req, res) {
 	return Q.fcall(function() {
 
-		console.log(__filename + ': DEBUG: _resolve(routes = '+"'" + routes + "', path='" + path + "') called!");
+		//console.log(__filename + ': DEBUG: _resolve(routes = '+"'" + routes + "', path='" + path + "') called!");
 		
 		path = path || [];
 

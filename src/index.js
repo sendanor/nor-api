@@ -74,7 +74,7 @@ function do_create_req(config, routes) {
 	/* Inner Request handler */
 	function do_req(req, res) {
 		req_counter += 1;
-		console.log(__filename + ': DEBUG: '+req_counter+': req.url = '+"'" + req.url + "'"); 
+		//console.log(__filename + ': DEBUG: '+req_counter+': req.url = '+"'" + req.url + "'"); 
 		return router.resolve( req, res );
 	} // do_req
 
@@ -120,7 +120,7 @@ api.first = function(list) {
 		return Q.fcall(function() {
 			if(i >= list.length) { return api.notFound; }
 			var h = list[i];
-			if(!is.fun(h)) { throw new TypeError("Handler #"+i+" in api.first() was not a function!"); }
+			if(!IS.fun(h)) { throw new TypeError("Handler #"+i+" in api.first() was not a function!"); }
 			return h(req, res).then(function(obj) {
 				if(obj === api.notFound) {
 					i += 1;
