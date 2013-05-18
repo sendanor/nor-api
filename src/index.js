@@ -31,11 +31,16 @@ function do_success(req, res, msg) {
 }
 
 /** Sends failed HTTP reply */
-function do_failure(req, res, msg, code) {
-	code = code || 501;
-	res.writeHead(code, {'Content-Type': 'application/json'});
-	msg = (typeof msg === 'string') ? msg : stringify_resource(msg);
-	res.end(msg + '\n');
+function do_failure(req, res, opts) {
+	opts = opts || {};
+	var obj = {
+		'type': opts.type || 'error',
+		'code': opts.code || 501,
+		'desc': opts.desc || (''+opts)
+	};
+
+	res.writeHead(obj.code, {'Content-Type': 'application/json'});
+	res.end(stringify_resource(obj) + '\n');
 }
 
 /** Builder for generic HTTP Request Handler */
@@ -66,12 +71,16 @@ function do_create_req(config, opts) {
 	function do_req(req, res) {
 		req_counter += 1;
 		console.log(__filename + ': DEBUG: '+req_counter+': req.url = '+"'" + req.url + "'"); 
-		var obj = router.resolve( req, res );
-		if(obj === undefined) {
-			do_failure(req, res, {'verb': 'notfound', 'msg':'The requested resource could not be found.'}, 404);
-		} else {
-			do_success(req, res, obj);
-		}
+
+		router.resolve( req, res ).then(function(obj) {
+			if(obj === undefined) {
+				do_failure(req, res, {'verb': 'notfound', 'desc':'The requested resource could not be found.', 'code':404});
+			} else {
+				do_success(req, res, obj);
+			}
+		}).fail(function(err) {
+			do_failure(req, res, err);
+		}).done();
 
 	} // do_req
 

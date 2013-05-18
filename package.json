@@ -9,7 +9,8 @@
   "repository": "",
   "author": "Jaakko-Heikki Heusala <jheusala@iki.fi>",
   "dependencies": {
-    "nor-config": "*"
+    "nor-config": "*",
+	"q": "*"
   },
   "license": "MIT"
 }

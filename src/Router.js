@@ -1,6 +1,7 @@
 
 /* Router for requests */
 
+var Q = require('q');
 var IS = require('./is.js');
 
 /** Internal target resolver
@@ -8,48 +9,57 @@ var IS = require('./is.js');
  * @param path Path to the resource as an array of keys.
  */
 function _resolve(routes, path, req, res) {
+	return Q.fcall(function() {
 
-	console.log(__filename + ': DEBUG: _resolve(routes = '+"'" + routes + "', path='" + path + "') called!");
-	
-	var obj = routes;
-	
-	// Resolve functions first
-	while(IS.fun(obj)) {
-		obj = obj(req, res);
-	}
-
-	// If the resource is undefined, return undefined instantly (resulting to HTTP error 404).
-	if(obj === undefined) {
-		return;
-	}
-
-	// If path is at the end, then return the current resource.
-	if(path.length === 0) {
-		/*
-		if(IS.obj(obj) && obj.hasOwnProperty('index')) {
-			res.writeHead(303, {
-				'Content-Type': 'application/json',
-				'Location':''
+		console.log(__filename + ': DEBUG: _resolve(routes = '+"'" + routes + "', path='" + path + "') called!");
+		
+		var obj = routes;
+		
+		// Resolve functions first
+		if(IS.fun(obj)) {
+			return obj(req, res).then(function(ret) {
+				return _resolve(ret, path, req, res);
 			});
-			res.end(JSON.stringify() + '\n');
+		}
+		
+		// If the resource is undefined, return undefined instantly (resulting to a HTTP error 404).
+		if(obj === undefined) {
 			return;
 		}
-		*/
-		return obj;
-	}
-
-	// Handle arrays
-	if(IS.array(obj)) {
-		return _resolve(obj[parseInt(path.shift(), 10)], path, req, res);
-	}
-
-	// Handle objects
-	if(IS.obj(obj)) {
-		return _resolve(obj[path.shift()], path, req, res);
-	}
-
-	// Handle other... make it 404 because we still have keys in the path but nowhere to go.
-	return undefined;
+		
+		// If path is at the end, then return the current resource.
+		if(path.length === 0) {
+			return obj;
+		}
+		
+		// Handle arrays
+		if(IS.array(obj)) {
+			var k = path[0],
+			    n = parseInt(path.shift(), 10)
+			if(k === "length") {
+				return _resolve(obj.length, path.shift(), req, res);
+			}
+			if(k !== ""+n) {
+				return Q.reject({'code':400, 'desc':'Bad Request'});
+			}
+			return _resolve(obj[n], path.shift(), req, res);
+		}
+		
+		// Handle objects
+		if(IS.obj(obj)) {
+			var k = path[0];
+			if(obj[k] === undefined) {
+				return undefined;
+			}
+			if(!obj.hasOwnProperty(k)) {
+				return Q.reject({'code':403, 'desc':'Forbidden'});
+			}
+			return _resolve(obj[path.shift()], path, req, res);
+		}
+		
+		// Handle other... make it 404 because we still have keys in the path but nowhere to go.
+		return undefined;
+	});
 }
 
 /** Constructor */
