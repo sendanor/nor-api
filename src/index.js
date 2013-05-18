@@ -1,5 +1,6 @@
 /* Index */
 
+var Q = require('q');
 var api_config = require('nor-config').from(__dirname);
 var IS = require('./is.js');
 var RequestRouter = require('./Router.js');
@@ -53,7 +54,7 @@ function do_failure(req, res, opts) {
 function do_create_req(config, routes) {
 	routes = routes || {};
 
-	var version = routes.version;
+	var version = routes.version || {};
 	if(version && (typeof version === 'object')) {
 	} else {
 		version = {'self':routes.version};
