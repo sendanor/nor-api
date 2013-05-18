@@ -11,6 +11,9 @@ function stringify_resource(obj) {
 	if(! IS.obj(obj) ) {
 		return JSON.stringify(obj);
 	}
+	if(IS.array(obj) ) {
+		return JSON.stringify(obj);
+	}
 	var res = {};
 	Object.keys(obj).forEach(function(k) {
 		var v = obj[k];

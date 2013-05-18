@@ -13,6 +13,8 @@ function _resolve(routes, path, req, res) {
 
 		console.log(__filename + ': DEBUG: _resolve(routes = '+"'" + routes + "', path='" + path + "') called!");
 		
+		path = path || [];
+
 		var obj = routes;
 		
 		// Resolve functions first
@@ -35,7 +37,7 @@ function _resolve(routes, path, req, res) {
 		// Handle arrays
 		if(IS.array(obj)) {
 			var k = path[0],
-			    n = parseInt(path.shift(), 10)
+			    n = parseInt(path.shift(), 10);
 			if(k === "length") {
 				return _resolve(obj.length, path.shift(), req, res);
 			}
