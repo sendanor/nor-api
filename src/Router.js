@@ -3,6 +3,7 @@
 
 var Q = require('q');
 var IS = require('./is.js');
+var flags = require('./flags.js');
 
 /** Internal target resolver
  * @param routes Object prepresenting routes to resources.
@@ -24,9 +25,9 @@ function _resolve(routes, path, req, res) {
 			});
 		}
 		
-		// If the resource is undefined, return undefined instantly (resulting to a HTTP error 404).
+		// If the resource is undefined, return flags.notFound (resulting to a HTTP error 404).
 		if(obj === undefined) {
-			return;
+			return flags.notFound;
 		}
 		
 		// If path is at the end, then return the current resource.
@@ -59,8 +60,8 @@ function _resolve(routes, path, req, res) {
 			return _resolve(obj[path.shift()], path, req, res);
 		}
 		
-		// Handle other... make it 404 because we still have keys in the path but nowhere to go.
-		return undefined;
+		// Returns notFound because we still have keys in the path but nowhere to go.
+		return flags.notFound;
 	});
 }
 

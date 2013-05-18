@@ -5,8 +5,9 @@ var IS = require('./is.js');
 var RequestRouter = require('./Router.js');
 var api = module.exports = {};
 
-api.replySent = {};
-api.replySent.toString = function() { return 'replySent'; };
+var flags = require('./flags.js');
+api.replySent = flags.replySent;
+api.notFound = flags.notFound;
 
 /** */
 function stringify_resource(obj) {
@@ -49,13 +50,13 @@ function do_failure(req, res, opts) {
 }
 
 /** Builder for generic HTTP Request Handler */
-function do_create_req(config, opts) {
-	var routes = opts.routes || {};
-	var version = opts.version || {};
-	
+function do_create_req(config, routes) {
+	routes = routes || {};
+
+	var version = routes.version;
 	if(version && (typeof version === 'object')) {
 	} else {
-		version = {'self':version};
+		version = {'self':routes.version};
 	}
 	
 	// If routes.version is missing, read it from the package.json of the target application.
@@ -100,8 +101,8 @@ function setup_server(config, opts) {
 		req_handler(req, res).then(function(obj) {
 			if(obj === api.replySent) {
 				return;
-			} else if(obj === undefined) {
-				do_failure(req, res, {'verb': 'notfound', 'desc':'The requested resource could not be found.', 'code':404});
+			} else if( (obj === undefined) || (obj === api.notFound) ) {
+				do_failure(req, res, {'verb': 'notFound', 'desc':'The requested resource could not be found.', 'code':404});
 			} else {
 				do_success(req, res, obj);
 			}
@@ -110,6 +111,27 @@ function setup_server(config, opts) {
 		}).done();
 	});
 }
+
+/** Handle the request with a first matching request handler from the list */
+api.first = function(list) {
+	var i = 0;
+	function handler(req, res) {
+		return Q.fcall(function() {
+			if(i >= list.length) { return api.notFound; }
+			var h = list[i];
+			if(!is.fun(h)) { throw new TypeError("Handler #"+i+" in api.first() was not a function!"); }
+			return h(req, res).then(function(obj) {
+				if(obj === api.notFound) {
+					i += 1;
+					return handler(req, res);
+				} else {
+					return obj;
+				}
+			}); // return h(req, res)
+		}); // Q.fcall
+	} // handler
+	return handler;
+}; // api.first
 
 // Exports
 api.createHandler = do_create_req;
