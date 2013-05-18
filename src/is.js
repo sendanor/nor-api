@@ -15,7 +15,7 @@ is.array = function is_array(o) {
 
 /** Returns true if object is a function */
 is.fun = function is_fun(o) {
-	if(is.obj(o) && (o instanceof Function) ) return true;
+	if(is.obj(o) && (o instanceof Function) ) { return true; }
 	return (o && (typeof o === 'function')) ? true : false;
 };
 

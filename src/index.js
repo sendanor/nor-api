@@ -98,23 +98,29 @@ function do_create_server(config, do_req) {
 function setup_server(config, opts) {
 	config._def('port', 3000);
 	var req_handler = do_create_req(config, opts);
-	return do_create_server(config, function(req, res) {
+	var server = do_create_server(config, function(req, res) {
 		req_handler(req, res).then(function(obj) {
 			if(obj === api.replySent) {
+				console.log('DEBUG: RESULT: reply was sent already: ', obj);
 				return;
-			} else if( (obj === undefined) || (obj === api.notFound) ) {
+			} else if(obj === api.notFound) {
+				console.log('DEBUG: RESULT: notFound: ', obj);
 				do_failure(req, res, {'verb': 'notFound', 'desc':'The requested resource could not be found.', 'code':404});
 			} else {
+				console.log('DEBUG: RESULT: success: ', obj);
 				do_success(req, res, obj);
 			}
 		}).fail(function(err) {
 			do_failure(req, res, err);
+			require('prettified').errors.print(err);
 		}).done();
 	});
+	return server;
 }
 
 /** Handle the request with a first matching request handler from the list */
 api.first = function(list) {
+	/*
 	function iterate_list(req, res) {
 		var i = 0;
 		function handler() {
@@ -123,11 +129,12 @@ api.first = function(list) {
 				var h = list[i];
 				if(!IS.fun(h)) { throw new TypeError("Handler #"+i+" in api.first() was not a function!"); }
 				return h(req, res).then(function(obj) {
-					console.log('DEBUG: ', obj);
 					if(obj === api.notFound) {
+						console.log('DEBUG: Not found: ', obj, ' #' + i);
 						i += 1;
 						return handler();
 					} else {
+						console.log('DEBUG: Found: ', obj, ' #' + i);
 						return obj;
 					}
 				}); // return h(req, res)
@@ -136,6 +143,35 @@ api.first = function(list) {
 		return handler();
 	} // iterate_list
 	return iterate_list;
+	*/
+
+	function handler(req, res) {
+		var paths = [];
+
+		function print_obj(obj) {
+			if(obj === api.notFound) {
+				console.log('DEBUG: Not found: ', obj);
+			} else {
+				console.log('DEBUG: Found: ', obj);
+				paths.push( obj );
+			}
+			return obj;
+		}
+
+		var init = {'type':'initial value'};
+		var p = list.map(function(f) {
+			return f.bind(undefined, req, res);
+		}).reduce(function (soFar, f) {
+			return soFar.then(print_obj).then(f);
+		}, Q.resolve(init)).then(print_obj).then(function() {
+			if(paths.length === 0) {
+				return api.notFound;
+			}
+			return paths.shift();
+		});
+		return p;
+	}
+	return handler;
 }; // api.first
 
 // Exports

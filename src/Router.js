@@ -18,11 +18,20 @@ function _resolve(routes, path, req, res) {
 
 		var obj = routes;
 		
-		// Resolve functions first
-		if(IS.fun(obj)) {
-			return obj(req, res).then(function(ret) {
+		// Resolve promises first
+		if(IS.obj(obj) && IS.fun(obj.then)) {
+			var p = obj.then(function(ret) {
 				return _resolve(ret, path, req, res);
 			});
+			return p;
+		}
+
+		// Resolve functions first
+		if(IS.fun(obj)) {
+			var p2 = obj(req, res).then(function(ret) {
+				return _resolve(ret, path, req, res);
+			});
+			return p2;
 		}
 		
 		// If the resource is undefined, return flags.notFound (resulting to a HTTP error 404).
@@ -50,11 +59,11 @@ function _resolve(routes, path, req, res) {
 		
 		// Handle objects
 		if(IS.obj(obj)) {
-			var k = path[0];
-			if(obj[k] === undefined) {
+			var k2 = path[0];
+			if(obj[k2] === undefined) {
 				return flags.notFound;
 			}
-			if(!obj.hasOwnProperty(k)) {
+			if(!obj.hasOwnProperty(k2)) {
 				return Q.reject({'code':403, 'desc':'Forbidden'});
 			}
 			return _resolve(obj[path.shift()], path, req, res);
