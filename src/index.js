@@ -3,6 +3,7 @@
 var Q = require('q');
 var api_config = require('nor-config').from(__dirname);
 var IS = require('./is.js');
+var helpers = require('./helpers.js');
 var RequestRouter = require('./Router.js');
 var api = module.exports = {};
 
@@ -10,30 +11,10 @@ var flags = require('./flags.js');
 api.replySent = flags.replySent;
 api.notFound = flags.notFound;
 
-/** */
-function stringify_resource(obj) {
-	if(! IS.obj(obj) ) {
-		return JSON.stringify(obj);
-	}
-	if(IS.array(obj) ) {
-		return JSON.stringify(obj);
-	}
-	var res = {};
-	Object.keys(obj).forEach(function(k) {
-		var v = obj[k];
-		if(IS.fun(v)) {
-			res[k] = {};
-		} else {
-			res[k] = v;
-		}
-	});
-	return JSON.stringify(res);
-}
-
 /** Sends successful HTTP reply */
 function do_success(req, res, msg) {
 	res.writeHead(200, {'Content-Type': 'application/json'});
-	msg = (typeof msg === 'string') ? msg : stringify_resource(msg);
+	msg = (typeof msg === 'string') ? msg : helpers.stringify(msg);
 	res.end(msg + '\n');
 }
 
@@ -47,7 +28,7 @@ function do_failure(req, res, opts) {
 	};
 
 	res.writeHead(obj.code, {'Content-Type': 'application/json'});
-	res.end(stringify_resource(obj) + '\n');
+	res.end(helpers.stringify(obj) + '\n');
 }
 
 /** Builder for generic HTTP Request Handler */
