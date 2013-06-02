@@ -7,6 +7,7 @@ var config2 = require('nor-config').from(__dirname + '/testconfig2');
 config2._def('host', 'localhost');
 config2._def('port', 8081);
 
+var Q = require('q');
 var coverage = require('./coverage.js');
 var vows = require('vows');
 var assert = require('assert');
@@ -150,7 +151,27 @@ vows.describe('Testing server api').addBatch({
 						res.writeHead(200, {'Content-Type':'text/plain'} );
 						res.end("Test");
 						return api.replySent;
-					}
+					},
+					'delayed_echo': function(req, res) {
+						var defer = Q.defer();
+						setTimeout(function() {
+							res.writeHead(200, {'Content-Type':'text/plain'} );
+							res.end("Test2");
+							defer.resolve(api.replySent);
+						}, 100);
+						return defer.promise;
+					},
+					'promise': (function() {
+						var defer = Q.defer();
+						setTimeout(function() {
+							defer.resolve("Test3");
+						}, 100);
+						return defer.promise;
+					}()),
+					'undef': function() {
+						return undefined;
+					},
+					'colors': ['red', 'green', 'blue']
 				});
 				return s;
 			},
@@ -162,8 +183,12 @@ vows.describe('Testing server api').addBatch({
 				},
 				'is not Error': isNotError(Error),
 				'is object': function(obj) { assert.isObject(obj); },
-				'Object.keys(obj) are apple,version,echo,$': function(obj) { assert.strictEqual(Object.keys(obj).toString(), 'apple,version,echo,$'); },
+				'Object.keys(obj) are apple,version,echo,delayed_echo,promise,undef,colors,$': function(obj) { assert.strictEqual(Object.keys(obj).toString(), 'apple,version,echo,delayed_echo,promise,undef,colors,$'); },
 				'.echo is object': function(obj) { assert.isObject(obj.echo); },
+				'.delayed_echo is object': function(obj) { assert.isObject(obj.delayed_echo); },
+				'.promise is object': function(obj) { assert.isObject(obj.promise); },
+				'.undef is object': function(obj) { assert.isObject(obj.undef); },
+				'.colors is array': function(obj) { assert.isArray(obj.colors); },
 				'.apple is "green"': function(obj) { assert.strictEqual(obj.apple, 'green'); },
 				'.version is {"api":"0.0.3"}': function(obj) { assert.strictEqual(JSON.stringify(obj.version), '{"self":"0.2","api":"0.0.3"}'); },
 				'.$ is object': function(obj) { assert.isObject(obj.$); },
@@ -193,6 +218,46 @@ vows.describe('Testing server api').addBatch({
 				'is not Error': isNotError(Error),
 				'is string': function(obj) { assert.isString(obj); },
 				'is "Test"': function(obj) { assert.strictEqual(obj, 'Test'); }
+			},
+			"GET /delayed_echo?foo2=bar2": {
+				topic: function(server, api) {
+					q_test(api.request('http://'+config2.host+':'+config2.port+'/delayed_echo?foo2=bar2'), this.callback);
+				},
+				'is not Error': isNotError(Error),
+				'is string': function(obj) { assert.isString(obj); },
+				'is "Test2"': function(obj) { assert.strictEqual(obj, 'Test2'); }
+			},
+			"GET /promise": {
+				topic: function() {
+					q_test(api.request('http://'+config2.host+':'+config2.port+'/promise'), this.callback);
+				},
+				'is not Error': isNotError(Error),
+				'is string': function(obj) { assert.isString(obj); },
+				'is "Test3"': function(obj) { assert.strictEqual(obj, 'Test3'); },
+				"GET /promise (again)": {
+					topic: function() {
+						q_test(api.request('http://'+config2.host+':'+config2.port+'/promise'), this.callback);
+					},
+					'is not Error': isNotError(Error),
+					'is string': function(obj) { assert.isString(obj); },
+					'is "Test3"': function(obj) { assert.strictEqual(obj, 'Test3'); }
+				}
+			},
+			"GET /colors": {
+				topic: function() {
+					q_test(api.request('http://'+config2.host+':'+config2.port+'/colors'), this.callback);
+				},
+				'is not Error': isNotError(Error),
+				'is array': function(obj) { assert.isArray(obj); },
+				// Next test does not work since api.request() adds .$ to the list
+				//'is ["red", "green", "blue"]': function(obj) { assert.deepEqual(obj, ["red","green","blue"]); },
+				'JSON.stringify(obj)': function(obj) { assert.strictEqual(JSON.stringify(obj), '["red","green","blue"]'); }
+			},
+			"GET /undef": {
+				topic: function() {
+					q_test_errors(api.request('http://'+config2.host+':'+config2.port+'/undef'), this.callback);
+				},
+				'is HTTPError 404': isError(api.errors.HTTPError, '404 - The requested resource could not be found.')
 			},
 			"GET /foobar": {
 				topic: function(server, api) {
