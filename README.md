@@ -8,7 +8,7 @@ nor-api -- Simple API library for Node.js
 License
 -------
 
-It's under MIT-style open source license -- see [https://github.com/Sendanor/nor-api/blob/master/LICENSE.txt](LICENSE.txt).
+It's under MIT-style open source license -- see [LICENSE.txt](https://github.com/Sendanor/nor-api/blob/master/LICENSE.txt).
 
 Installation
 ------------
