@@ -146,11 +146,12 @@ api.first = function(list) {
 	*/
 
 	function handler(req, res) {
+		var init = {'type':'initial value'};
 		var paths = [];
 
-		function print_obj(obj) {
-			if(obj === api.notFound) {
-				console.log('DEBUG: Not found: ', obj);
+		function check_obj(obj) {
+			if( (obj === api.notFound) || (obj === init) ) {
+				console.log('DEBUG: Skipping: ', obj);
 			} else {
 				console.log('DEBUG: Found: ', obj);
 				paths.push( obj );
@@ -158,12 +159,11 @@ api.first = function(list) {
 			return obj;
 		}
 
-		var init = {'type':'initial value'};
 		var p = list.map(function(f) {
 			return f.bind(undefined, req, res);
 		}).reduce(function (soFar, f) {
-			return soFar.then(print_obj).then(f);
-		}, Q.resolve(init)).then(print_obj).then(function() {
+			return soFar.then(check_obj).then(f);
+		}, Q.resolve(init)).then(check_obj).then(function() {
 			if(paths.length === 0) {
 				return api.notFound;
 			}
