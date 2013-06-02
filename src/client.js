@@ -13,7 +13,7 @@ function parse_by_content_type(type, body) {
 	if(type === 'text/plain') {
 		return ''+body;
 	}
-	return body;
+	throw new Error("Unknown Content-Type " + type + " -- don't know how to parse!");
 }
 
 /** Create HTTP request
@@ -33,7 +33,7 @@ mod.request = function(opts) {
 
 		var content_type = (res && res.headers && res.headers['content-type']) ? res.headers['content-type'] : 'application/json';
 
-	 	res.setEncoding('utf8');
+		res.setEncoding('utf8');
 		res.on('data', function (chunk) {
 			buffer += chunk;
 		});
