@@ -63,7 +63,7 @@ function _resolve(routes, path, req, res) {
 				return flags.notFound;
 			}
 			if(!obj.hasOwnProperty(k2)) {
-				return Q.reject({'code':403, 'desc':'Forbidden'});
+				return Q.fcall(function() { throw new errors.HTTPError({'code':403, 'desc':'Forbidden'}); });
 			}
 			return _resolve(obj[path.shift()], path, req, res);
 		}
