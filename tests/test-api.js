@@ -303,6 +303,18 @@ vows.describe('Testing server api').addBatch({
 				},
 				'is HTTPError 404': isError(api.errors.HTTPError, '404 - The requested resource could not be found.')
 			},
+			"GET /hasOwnProperty": {
+				topic: function() {
+					q_test_errors(api.request('http://'+config2.host+':'+config2.port+'/hasOwnProperty'), this.callback);
+				},
+				'is HTTPError 403': isError(api.errors.HTTPError, '403 - Forbidden')
+			},
+			"GET /hello/world": {
+				topic: function() {
+					q_test_errors(api.request('http://'+config2.host+':'+config2.port+'/hello/world'), this.callback);
+				},
+				'is HTTPError 404': isError(api.errors.HTTPError, '404 - The requested resource could not be found.')
+			},
 			"GET /foobar": {
 				topic: function(server, api) {
 					q_test_errors(api.request('http://'+config2.host+':'+config2.port+'/foobar'), this.callback);
