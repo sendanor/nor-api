@@ -4,6 +4,7 @@ var Q = require('q');
 var api_config = require('nor-config').from(__dirname);
 var IS = require('./is.js');
 var helpers = require('./helpers.js');
+var client = require('./client.js');
 var RequestRouter = require('./Router.js');
 var api = module.exports = {};
 
@@ -158,5 +159,6 @@ api.first = function(list) {
 // Exports
 api.createHandler = do_create_req;
 api.createServer = setup_server;
+api.request = client.request;
 
 /* EOF */
