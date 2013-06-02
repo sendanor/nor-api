@@ -289,6 +289,12 @@ vows.describe('Testing server api').addBatch({
 						q_test_errors(api.request('http://'+config2.host+':'+config2.port+'/colors/3'), this.callback);
 					},
 					'is HTTPError 404': isError(api.errors.HTTPError, '404 - The requested resource could not be found.')
+				},
+				"GET /colors/foobar": {
+					topic: function() {
+						q_test_errors(api.request('http://'+config2.host+':'+config2.port+'/colors/foobar'), this.callback);
+					},
+					'is HTTPError 400': isError(api.errors.HTTPError, '400 - Bad Request')
 				}
 			},
 			"GET /undef": {

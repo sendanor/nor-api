@@ -90,7 +90,9 @@ function setup_server(config, opts) {
 			}
 		}).fail(function(err) {
 			do_failure(req, res, err);
-			require('prettified').errors.print(err);
+			if(!(err instanceof errors.HTTPError)) {
+				require('prettified').errors.print(err);
+			}
 		}).done();
 	});
 	return server;

@@ -3,6 +3,7 @@
 
 var Q = require('q');
 var IS = require('./is.js');
+var errors = require('./errors.js');
 var flags = require('./flags.js');
 
 /** Internal target resolver
@@ -12,8 +13,6 @@ var flags = require('./flags.js');
 function _resolve(routes, path, req, res) {
 	return Q.fcall(function() {
 
-		//console.log(__filename + ': DEBUG: _resolve(routes = '+"'" + routes + "', path='" + path + "') called!");
-		
 		path = path || [];
 
 		var obj = routes;
@@ -52,7 +51,7 @@ function _resolve(routes, path, req, res) {
 				return _resolve(obj.length, path.shift(), req, res);
 			}
 			if(k !== ""+n) {
-				return Q.reject({'code':400, 'desc':'Bad Request'});
+				return Q.fcall(function() { throw new errors.HTTPError({'code':400, 'desc':'Bad Request'}); });
 			}
 			return _resolve(obj[n], path.shift(), req, res);
 		}
