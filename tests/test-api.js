@@ -251,7 +251,45 @@ vows.describe('Testing server api').addBatch({
 				'is array': function(obj) { assert.isArray(obj); },
 				// Next test does not work since api.request() adds .$ to the list
 				//'is ["red", "green", "blue"]': function(obj) { assert.deepEqual(obj, ["red","green","blue"]); },
-				'JSON.stringify(obj)': function(obj) { assert.strictEqual(JSON.stringify(obj), '["red","green","blue"]'); }
+				'JSON.stringify(obj)': function(obj) { assert.strictEqual(JSON.stringify(obj), '["red","green","blue"]'); },
+				"GET /colors/length": {
+					topic: function() {
+						q_test(api.request('http://'+config2.host+':'+config2.port+'/colors/length'), this.callback);
+					},
+					'is not Error': isNotError(Error),
+					'is number': function(obj) { assert.isNumber(obj); },
+					'JSON.stringify(obj)': function(obj) { assert.strictEqual(JSON.stringify(obj), '3'); }
+				},
+				"GET /colors/0": {
+					topic: function() {
+						q_test(api.request('http://'+config2.host+':'+config2.port+'/colors/0'), this.callback);
+					},
+					'is not Error': isNotError(Error),
+					'is string': function(obj) { assert.isString(obj); },
+					'is "red"': function(obj) { assert.strictEqual(obj, 'red'); }
+				},
+				"GET /colors/1": {
+					topic: function() {
+						q_test(api.request('http://'+config2.host+':'+config2.port+'/colors/1'), this.callback);
+					},
+					'is not Error': isNotError(Error),
+					'is string': function(obj) { assert.isString(obj); },
+					'is "green"': function(obj) { assert.strictEqual(obj, 'green'); }
+				},
+				"GET /colors/2": {
+					topic: function() {
+						q_test(api.request('http://'+config2.host+':'+config2.port+'/colors/2'), this.callback);
+					},
+					'is not Error': isNotError(Error),
+					'is string': function(obj) { assert.isString(obj); },
+					'is "blue"': function(obj) { assert.strictEqual(obj, 'blue'); }
+				},
+				"GET /colors/3": {
+					topic: function() {
+						q_test_errors(api.request('http://'+config2.host+':'+config2.port+'/colors/3'), this.callback);
+					},
+					'is HTTPError 404': isError(api.errors.HTTPError, '404 - The requested resource could not be found.')
+				}
 			},
 			"GET /undef": {
 				topic: function() {
