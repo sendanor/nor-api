@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/Sendanor/nor-api.png?branch=master)](http://travis-ci.org/Sendanor/nor-api)
+[![Build Status](https://secure.travis-ci.org/Sendanor/nor-api.png?branch=master)](http://travis-ci.org/Sendanor/nor-api#readme)
 
 nor-api -- Simple API library for Node.js
 =========================================
@@ -43,4 +43,4 @@ It has resources at locations:
 
 Once running, the HTTP service will be available at http://localhost:3000.
 
-See also [nor-config](http://github.com/Sendanor/nor-config) for more details about the configuration.
+See also [nor-config](http://github.com/Sendanor/nor-config#readme) for more details about the configuration.
