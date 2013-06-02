@@ -40,17 +40,15 @@ function do_create_req(config, routes) {
 	var version = routes.version || {};
 	if(version && (typeof version === 'object')) {
 	} else {
-		version = {'self':routes.version};
+		version = {'self':routes.version || config.pkg.version};
 	}
 	
-	// If routes.version is missing, read it from the package.json of the target application.
-	if(!routes.version) {
-		routes.version = {
-			'self': version.self || config.pkg.version,
-			'api': version.api || api_config.pkg.version
-		};
+	if(!version.api) {
+		version.api = api_config.pkg.version;
 	}
 	
+	routes.version = version;
+
 	var router = new RequestRouter(routes);
 	var req_counter = 0;
 
@@ -83,13 +81,11 @@ function setup_server(config, opts) {
 	var server = do_create_server(config, function(req, res) {
 		req_handler(req, res).then(function(obj) {
 			if(obj === api.replySent) {
-				//console.log('DEBUG: RESULT: reply was sent already: ', obj);
+				// Silently return since reply has been handler already.
 				return;
 			} else if(obj === api.notFound) {
-				//console.log('DEBUG: RESULT: notFound: ', obj);
 				do_failure(req, res, {'verb': 'notFound', 'desc':'The requested resource could not be found.', 'code':404});
 			} else {
-				//console.log('DEBUG: RESULT: success: ', obj);
 				do_success(req, res, obj);
 			}
 		}).fail(function(err) {
@@ -101,6 +97,7 @@ function setup_server(config, opts) {
 }
 
 /** Handle the request with a first matching request handler from the list */
+/* Not tested yet
 api.first = function(list) {
 	function handler(req, res) {
 		var init = {'type':'initial value'};
@@ -130,6 +127,7 @@ api.first = function(list) {
 	}
 	return handler;
 }; // api.first
+*/
 
 // Exports
 api.createHandler = do_create_req;
