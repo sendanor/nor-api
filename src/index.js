@@ -1,10 +1,11 @@
 /* Index */
 
 var Q = require('q');
-var api_config = require('nor-config').from(__dirname);
+var api_config = require('nor-config').from(require('path').dirname(__dirname));
 var IS = require('./is.js');
 var helpers = require('./helpers.js');
 var client = require('./client.js');
+var errors = require('./errors.js');
 var RequestRouter = require('./Router.js');
 var api = module.exports = {};
 
@@ -14,9 +15,9 @@ api.notFound = flags.notFound;
 
 /** Sends successful HTTP reply */
 function do_success(req, res, msg) {
-	res.writeHead(200, {'Content-Type': 'application/json'});
+	res.writeHead(200, {'Content-Type': ((typeof msg === 'string') ? 'text/plain' : 'application/json')});
 	msg = (typeof msg === 'string') ? msg : helpers.stringify(msg);
-	res.end(msg + '\n');
+	res.end(msg);
 }
 
 /** Sends failed HTTP reply */
@@ -56,7 +57,6 @@ function do_create_req(config, routes) {
 	/* Inner Request handler */
 	function do_req(req, res) {
 		req_counter += 1;
-		//console.log(__filename + ': DEBUG: '+req_counter+': req.url = '+"'" + req.url + "'"); 
 		return router.resolve( req, res );
 	} // do_req
 
@@ -68,10 +68,10 @@ function do_create_server(config, do_req) {
 	var http = require('http');
 	if(config.host) {
 		http.createServer(do_req).listen(config.port, config.host);
-		console.log("Server running at http://"+config.host+":"+config.port+"/");
+		//console.log("Server running at http://"+config.host+":"+config.port+"/");
 	} else {
 		http.createServer(do_req).listen(config.port);
-		console.log("Server running at http://0.0.0.0:"+config.port);
+		//console.log("Server running at http://0.0.0.0:"+config.port);
 	}
 	return http;
 }
@@ -83,13 +83,13 @@ function setup_server(config, opts) {
 	var server = do_create_server(config, function(req, res) {
 		req_handler(req, res).then(function(obj) {
 			if(obj === api.replySent) {
-				console.log('DEBUG: RESULT: reply was sent already: ', obj);
+				//console.log('DEBUG: RESULT: reply was sent already: ', obj);
 				return;
 			} else if(obj === api.notFound) {
-				console.log('DEBUG: RESULT: notFound: ', obj);
+				//console.log('DEBUG: RESULT: notFound: ', obj);
 				do_failure(req, res, {'verb': 'notFound', 'desc':'The requested resource could not be found.', 'code':404});
 			} else {
-				console.log('DEBUG: RESULT: success: ', obj);
+				//console.log('DEBUG: RESULT: success: ', obj);
 				do_success(req, res, obj);
 			}
 		}).fail(function(err) {
@@ -102,40 +102,15 @@ function setup_server(config, opts) {
 
 /** Handle the request with a first matching request handler from the list */
 api.first = function(list) {
-	/*
-	function iterate_list(req, res) {
-		var i = 0;
-		function handler() {
-			return Q.fcall(function() {
-				if(i >= list.length) { return api.notFound; }
-				var h = list[i];
-				if(!IS.fun(h)) { throw new TypeError("Handler #"+i+" in api.first() was not a function!"); }
-				return h(req, res).then(function(obj) {
-					if(obj === api.notFound) {
-						console.log('DEBUG: Not found: ', obj, ' #' + i);
-						i += 1;
-						return handler();
-					} else {
-						console.log('DEBUG: Found: ', obj, ' #' + i);
-						return obj;
-					}
-				}); // return h(req, res)
-			}); // Q.fcall
-		} // handler
-		return handler();
-	} // iterate_list
-	return iterate_list;
-	*/
-
 	function handler(req, res) {
 		var init = {'type':'initial value'};
 		var paths = [];
 
 		function check_obj(obj) {
 			if( (obj === api.notFound) || (obj === init) ) {
-				console.log('DEBUG: Skipping: ', obj);
+				//console.log('DEBUG: Skipping: ', obj);
 			} else {
-				console.log('DEBUG: Found: ', obj);
+				//console.log('DEBUG: Found: ', obj);
 				paths.push( obj );
 			}
 			return obj;
@@ -160,5 +135,6 @@ api.first = function(list) {
 api.createHandler = do_create_req;
 api.createServer = setup_server;
 api.request = client.request;
+api.errors = errors;
 
 /* EOF */

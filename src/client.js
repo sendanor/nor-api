@@ -2,7 +2,19 @@
 
 var Q = require('q');
 var IS = require('./is.js');
+var HTTPError = require('./errors.js').HTTPError;
 var mod = module.exports = {};
+
+/* */
+function parse_by_content_type(type, body) {
+	if(type === 'application/json') {
+		return JSON.parse(body);
+	}
+	if(type === 'text/plain') {
+		return ''+body;
+	}
+	return body;
+}
 
 /** Create HTTP request
  * @param opts string|object URL as parsed object or string.
@@ -19,6 +31,8 @@ mod.request = function(opts) {
 		//console.log('STATUS: ' + res.statusCode);
 		//console.log('HEADERS: ' + JSON.stringify(res.headers));
 
+		var content_type = (res && res.headers && res.headers['content-type']) ? res.headers['content-type'] : 'application/json';
+
 	 	res.setEncoding('utf8');
 		res.on('data', function (chunk) {
 			buffer += chunk;
@@ -29,9 +43,9 @@ mod.request = function(opts) {
 		res.on('close', function() {
 			try {
 				if(res.statusCode !== 200) {
-					defer.reject('Status code was ' + res.statusCode + ': ' + buffer);
+					throw new HTTPError(parse_by_content_type(content_type, buffer));
 				} else {
-					defer.reject('Connection closed before end event!');
+					throw new Error('Connection closed before end event!');
 				}
 			} catch(e) {
 				defer.reject(e);
@@ -40,13 +54,15 @@ mod.request = function(opts) {
 		res.on('end', function() {
 			try {
 				if(res.statusCode !== 200) {
-					defer.reject('Status code was ' + res.statusCode + ': ' + buffer);
+					throw new HTTPError(parse_by_content_type(content_type, buffer));
 				} else {
-					var reply = JSON.parse(buffer);
-					reply.$ = {
-						statusCode: res.statusCode,
-						headers: res.headers
-					};
+					var reply = parse_by_content_type(content_type, buffer);
+					if(reply && (typeof reply === 'object')) {
+						reply.$ = {
+							statusCode: res.statusCode,
+							headers: res.headers
+						};
+					}
 					defer.resolve(reply);
 				}
 			} catch(e) {

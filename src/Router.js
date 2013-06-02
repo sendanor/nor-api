@@ -28,7 +28,7 @@ function _resolve(routes, path, req, res) {
 
 		// Resolve functions first
 		if(IS.fun(obj)) {
-			var p2 = obj(req, res).then(function(ret) {
+			var p2 = Q.when(obj(req, res)).then(function(ret) {
 				return _resolve(ret, path, req, res);
 			});
 			return p2;
