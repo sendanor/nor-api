@@ -5,7 +5,7 @@ var util = require('util');
 /** */
 function HTTPError(obj, constr) {
 	var self = this;
-	Error.captureStackTrace(self, constr || self)
+	Error.captureStackTrace(self, constr || self);
 	Object.keys(obj).forEach(function(key) {
 		self[key] = obj[key];
 	});
