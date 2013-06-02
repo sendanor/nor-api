@@ -1,2 +1,5 @@
 node_modules/
 local/
+tmp/
+src-inst/
+coverage.html

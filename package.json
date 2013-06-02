@@ -1,14 +1,34 @@
 {
   "name": "nor-api",
-  "version": "0.0.2",
-  "description": "Generic module for building Sendanor's APIs.",
+  "version": "0.0.3",
+  "description": "Simple HTTP API library for Node.js",
+  "author": "Jaakko-Heikki Heusala <jheusala@iki.fi>",
+  "homepage": "http://github.com/Sendanor/nor-api#readme",
+  "license": "MIT",
+  "readmeFilename": "README.md",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vows tests/test-*.js --spec --isolate"
   },
-  "repository": "",
-  "author": "Jaakko-Heikki Heusala <jheusala@iki.fi>",
-  "license": "MIT",
+  "directories": {
+    "test": "tests",
+    "src": "src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sendanor/nor-api.git"
+  },
+  "keywords": [
+    "api",
+    "rest", "http"
+  ],
+  "engines": {
+    "node": ">= 0.8"
+  },
+  "bugs": {
+    "mail" : "jheusala@iki.fi",
+    "web" : "https://github.com/Sendanor/nor-api/issues"
+  },
   "dependencies": {
     "prettified": "*",
     "nor-config": "*",
